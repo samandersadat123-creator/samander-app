@@ -1,1 +1,1053 @@
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>S ROOM Investment</title>
+
+<style>
+*{box-sizing:border-box}
+body{
+ margin:0;background:#101114;color:white;
+ font-family:Arial,sans-serif
+}
+header{
+ padding:22px;border-bottom:1px solid #39352b;
+ position:sticky;top:0;background:#101114
+}
+.logo{font-size:29px;font-weight:bold;letter-spacing:5px;color:#dfbd65}
+.container{max-width:650px;margin:auto;padding:20px}
+.card{
+ background:#1c1d22;border:1px solid #38342b;
+ border-radius:18px;padding:22px;margin:17px 0
+}
+h2{font-size:26px}
+h3{margin-top:0}
+p{color:#aaa;line-height:1.6}
+label{display:block;color:#dfbd65;margin-top:17px}
+input{
+ width:100%;padding:15px;margin-top:8px;
+ border:1px solid #444;background:#101114;
+ border-radius:9px;color:white;font-size:16px
+}
+button{
+ width:100%;padding:15px;margin-top:13px;
+ border:0;border-radius:9px;
+ background:#dfbd65;color:#171717;
+ font-size:15px;font-weight:bold
+}
+.secondary{background:#303137;color:white}
+.notice{
+ background:#302a1d;color:#e5ca82;
+ padding:15px;border-radius:10px;line-height:1.6
+}
+.balance{font-size:38px;color:#dfbd65;margin:12px 0}
+.hidden{display:none!important}
+.link{text-align:center;color:#dfbd65;margin:20px 0;cursor:pointer}
+.message{font-size:14px;color:#dfbd65}
+.nav{
+ position:sticky;bottom:0;background:#191a1f;
+ display:grid;grid-template-columns:repeat(3,1fr);
+ gap:5px;padding:10px;max-width:650px;margin:auto
+}
+.nav button{font-size:12px;padding:12px 3px;margin:0}
+</style>
+</head>
+
+<body>
+
+<header>
+<div class="logo">S ROOM</div>
+</header>
+
+<main class="container">
+
+<!-- LOGIN -->
+<section id="login">
+<div class="card">
+<h2>Welcome Back</h2>
+<p>Login to your S ROOM account.</p>
+
+<label>Email Address</label>
+<input id="loginEmail" type="email" placeholder="Enter email">
+
+<label>Password</label>
+<input id="loginPassword" type="password" placeholder="Enter password">
+
+<button id="loginBtn">LOGIN</button>
+<div class="link" id="showRegister">Create a new account</div>
+<p class="message" id="loginMessage"></p>
+</div>
+</section>
+
+<!-- REGISTER -->
+<section id="register" class="hidden">
+<div class="card">
+<h2>Create Account</h2>
+
+<label>Email Address</label>
+<input id="registerEmail" type="email" placeholder="Enter email">
+
+<label>Password</label>
+<input id="registerPassword" type="password" placeholder="Minimum 6 characters">
+
+<label>Confirm Password</label>
+<input id="confirmPassword" type="password" placeholder="Confirm password">
+
+<button id="registerBtn">CREATE ACCOUNT</button>
+<div class="link" id="showLogin">Already registered? Login</div>
+<p class="message" id="registerMessage"></p>
+</div>
+</section>
+
+<!-- DASHBOARD -->
+<section id="dashboard" class="hidden">
+
+<h2>Welcome to S ROOM</h2>
+
+<div class="notice">
+DEMO MODE — All transactions and balances are simulated.
+No real money is accepted.
+</div>
+
+<div class="card">
+<p>Total Account Balance</p>
+<div class="balance" id="balance">$0.00</div>
+<p>Total Invested: <strong>$0.00</strong></p>
+<p>Recorded Returns: <strong>$0.00</strong></p>
+</div>
+
+<div class="card">
+<h3>Account Information</h3>
+<p id="userEmail"></p>
+<p>Currency: USD</p>
+<p>Network display: BNB Smart Chain (BEP20)</p>
+</div>
+
+<!-- HOME -->
+<div id="homeTab" class="card">
+<h3>Home</h3>
+<p>Welcome to your S ROOM dashboard.</p>
+<p>Your account is connected.</p>
+</div>
+
+<!-- DEPOSIT -->
+<div id="depositTab" class="card hidden">
+<h3>Demo Deposit</h3>
+<p>Test the deposit interface without sending money.</p>
+<label>Amount (USD)</label>
+<input type="number" id="demoAmount" placeholder="Enter amount" min="1">
+<button id="depositBtn">TEST DEPOSIT</button>
+<p class="message" id="depositMessage"></p>
+</div>
+
+<!-- PLANS -->
+<div id="plansTab" class="card hidden">
+<h3>Investment Information</h3>
+<p>Review investment risks before making financial decisions.</p>
+<p>No guaranteed daily returns are offered.</p>
+<p>All plans in this version are demonstrations only.</p>
+</div>
+
+<!-- HISTORY -->
+<div id="historyTab" class="card hidden">
+<h3>Transaction History</h3>
+<div id="historyMessage">No demo transactions yet.</div>
+</div>
+
+<!-- WITHDRAW -->
+<div id="withdrawTab" class="card hidden">
+<h3>Demo Withdrawals</h3>
+<p>Real withdrawals are not available in demo mode.</p>
+</div>
+
+<!-- PROFILE -->
+<div id="profileTab" class="card hidden">
+<h3>My Profile</h3>
+<p id="profileEmail"></p>
+<button class="secondary" id="logoutBtn">LOG OUT</button>
+</div>
+
+</section>
+</main>
+
+<!-- NAVIGATION -->
+<nav id="navigation" class="nav hidden">
+<button onclick="openTab('home')">HOME</button>
+<button onclick="openTab('deposit')">DEPOSIT</button>
+<button onclick="openTab('plans')">PLANS</button>
+<button onclick="openTab('history')">HISTORY</button>
+<button onclick="openTab('withdraw')">WITHDRAW</button>
+<button onclick="openTab('profile')">PROFILE</button>
+</nav>
+
+<script type="module">
+
+import { initializeApp }
+from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
+
+import {
+ getAuth,
+ createUserWithEmailAndPassword,
+ signInWithEmailAndPassword,
+ onAuthStateChanged,
+ signOut
+} from "https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js";
+
+const firebaseConfig = {
+ apiKey: "AIzaSyAgTgRGDs1lPOyAWnXVg1iE05H_E8wQSn0",
+ authDomain: "fir-room-26471.firebaseapp.com",
+ projectId: "fir-room-26471",
+ storageBucket: "fir-room-26471.firebasestorage.app",
+ messagingSenderId: "735169386532",
+ appId: "1:735169386532:web:bb4010e43e45a4b118e0b1"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+
+const $ = id => document.getElementById(id);
+
+function showPage(page){
+ ["login","register","dashboard"].forEach(id=>{
+  $(id).classList.add("hidden");
+ });
+ $(page).classList.remove("hidden");
+ $("navigation").classList.toggle("hidden",page!=="dashboard");
+}
+
+$("showRegister").onclick=()=>showPage("register");
+$("showLogin").onclick=()=>showPage("login");
+
+$("registerBtn").onclick=async()=>{
+ const email=$("registerEmail").value.trim();
+ const password=$("registerPassword").value;
+ const confirm=$("confirmPassword").value;
+
+ $("registerMessage").textContent="";
+
+ if(!email||!password){
+  $("registerMessage").textContent="Enter email and password.";
+  return;
+ }
+ if(password.length<6){
+  $("registerMessage").textContent="Password must be at least 6 characters.";
+  return;
+ }
+ if(password!==confirm){
+  $("registerMessage").textContent="Passwords do not match.";
+  return;
+ }
+
+ try{
+  await createUserWithEmailAndPassword(auth,email,password);
+ }catch(e){
+  $("registerMessage").textContent=e.message;
+ }
+};
+
+$("loginBtn").onclick=async()=>{
+ try{
+  await signInWithEmailAndPassword(
+   auth,
+   $("loginEmail").value.trim(),
+   $("loginPassword").value
+  );
+ }catch(e){
+  $("loginMessage").textContent="Login failed. Check your details.";
+ }
+};
+
+window.openTab=function(tab){
+ ["home","deposit","plans","history","withdraw","profile"]
+ .forEach(name=>{
+  $(name+"Tab").classList.add("hidden");
+ });
+ $(tab+"Tab").classList.remove("hidden");
+};
+
+let demoHistory=[];
+
+$("depositBtn").onclick=()=>{
+ const amount=Number($("demoAmount").value);
+
+ if(!Number.isFinite(amount)||amount<=0){
+  $("depositMessage").textContent="Enter a valid amount.";
+  return;
+ }
+
+ demoHistory.push({
+  type:"Demo deposit test",
+  amount:amount
+ });
+
+ $("historyMessage").innerHTML=demoHistory.map(item=>
+  `<p>${item.type}: $${item.amount.toFixed(2)} — SIMULATED</p>`
+ ).join("");
+
+ $("depositMessage").textContent=
+ "Demo transaction recorded. No money was received.";
+
+ $("demoAmount").value="";
+};
+
+$("logoutBtn").onclick=()=>signOut(auth);
+
+onAuthStateChanged(auth,user=>{
+ if(user){
+  $("userEmail").textContent=user.email;
+  $("profileEmail").textContent="Email: "+user.email;
+  showPage("dashboard");
+ }else{
+  showPage("login");
+ }
+});
+
+</script>
+
+</body>
+</html>
+<style>
+.menu-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+  margin: 20px 0;
+}
+
+.menu-btn {
+  height: 90px;
+  border: none;
+  border-radius: 20px;
+  color: white;
+  font-size: 14px;
+  font-weight: bold;
+  box-shadow: 0 7px 20px #0005;
+  transition: transform .25s ease;
+  animation: appear .5s ease both;
+}
+
+.menu-btn:active {
+  transform: scale(.92);
+}
+
+.home-btn {background:linear-gradient(135deg,#4776e6,#8e54e9);}
+.deposit-btn {background:linear-gradient(135deg,#11998e,#38ef7d);}
+.plans-btn {background:linear-gradient(135deg,#f7971e,#ffd200);color:#222;}
+.history-btn {background:linear-gradient(135deg,#396afc,#2948ff);}
+.withdraw-btn {background:linear-gradient(135deg,#ee0979,#ff6a00);}
+.profile-btn {background:linear-gradient(135deg,#614385,#516395);}
+
+@keyframes appear {
+  from {opacity:0;transform:translateY(15px);}
+  to {opacity:1;transform:translateY(0);}
+}
+</style>
+<style>
+#dashboard button[onclick*="openTab"] {
+  background: linear-gradient(135deg,#b88632,#f5d77a);
+  color: #171717;
+  border: 1px solid #ffe29a;
+  border-radius: 18px;
+  min-height: 65px;
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  box-shadow: 0 5px 18px #d9b65d33;
+  transition: transform .25s ease, filter .25s ease;
+}
+
+#dashboard button[onclick*="openTab"]:active {
+  transform: scale(.94);
+  filter: brightness(1.2);
+}
+</style>
+<style>
+#navigation button {
+  color: white !important;
+  border: none !important;
+  border-radius: 16px !important;
+  min-height: 60px;
+  font-weight: bold;
+  font-size: 13px;
+  box-shadow: 0 5px 15px #0008;
+  transition: all .25s ease;
+}
+
+#navigation button:nth-child(1) {
+  background: linear-gradient(135deg,#536dfe,#9b50e8) !important;
+}
+#navigation button:nth-child(2) {
+  background: linear-gradient(135deg,#008f82,#38d879) !important;
+}
+#navigation button:nth-child(3) {
+  background: linear-gradient(135deg,#f7971e,#ffd200) !important;
+}
+#navigation button:nth-child(4) {
+  background: linear-gradient(135deg,#2875cf,#39b5e8) !important;
+}
+#navigation button:nth-child(5) {
+  background: linear-gradient(135deg,#e53935,#ff8a30) !important;
+}
+#navigation button:nth-child(6) {
+  background: linear-gradient(135deg,#7350a6,#bd70c9) !important;
+}
+
+#navigation button:active {
+  transform: scale(.92);
+  filter: brightness(1.2);
+}
+</style>
+<style>
+#navigation button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 10px 4px;
+}
+
+#navigation button:nth-child(1)::before {
+  content: "🏠";
+}
+#navigation button:nth-child(2)::before {
+  content: "💰";
+}
+#navigation button:nth-child(3)::before {
+  content: "📊";
+}
+#navigation button:nth-child(4)::before {
+  content: "📜";
+}
+#navigation button:nth-child(5)::before {
+  content: "💸";
+}
+#navigation button:nth-child(6)::before {
+  content: "👤";
+}
+
+#navigation button::before {
+  font-size: 22px;
+}
+</style>
+<style>
+#navigation button {
+  position: relative;
+  overflow: hidden;
+  transition: all .3s ease;
+}
+  </style>
+  <style>
+/* S ROOM FULL PREMIUM DESIGN */
+
+#dashboard {
+  background: #090b10 !important;
+  color: #f5f5f5 !important;
+  padding: 20px !important;
+  border-radius: 22px !important;
+}
+
+#dashboard h1,
+#dashboard h2,
+#dashboard h3 {
+  color: #f5d77a !important;
+  text-shadow: 0 0 12px #d6ad5544;
+}
+
+#dashboard p {
+  color: #dedede;
+}
+
+#dashboard .notice {
+  background: linear-gradient(120deg,#30240c,#171717) !important;
+  color: #ffe29a !important;
+  border: 1px solid #c9a44c !important;
+  border-radius: 18px !important;
+  padding: 18px !important;
+}
+
+#dashboard .balance-card,
+#dashboard .card,
+#dashboard .box {
+  background: linear-gradient(145deg,#242019,#111318) !important;
+  border: 1px solid #b99545 !important;
+  border-radius: 20px !important;
+  padding: 20px !important;
+  box-shadow: 0 8px 25px #0008 !important;
+}
+
+#dashboard input,
+#dashboard select {
+  background: #171a22 !important;
+  color: white !important;
+  border: 1px solid #b99545 !important;
+  border-radius: 12px !important;
+  padding: 12px !important;
+}
+
+#dashboard button {
+  border-radius: 14px !important;
+  font-weight: bold !important;
+  transition: .25s ease !important;
+}
+
+#dashboard button:active {
+  transform: scale(.95);
+}
+</style>
+<style>
+#dashboard {
+  background-image:
+    radial-gradient(circle at top right,#6b501d33,transparent 35%),
+    linear-gradient(160deg,#090b10,#17130b) !important;
+}
+
+#dashboard h2 {
+  font-size: 28px !important;
+  letter-spacing: 1px;
+  padding: 15px 0;
+}
+
+#dashboard .notice {
+  box-shadow: 0 0 20px #d6ad5522;
+  animation: roomGlow 3s infinite alternate;
+}
+
+@keyframes roomGlow {
+  from {box-shadow: 0 0 8px #d6ad5522;}
+  to {box-shadow: 0 0 24px #d6ad5577;}
+}
+</style>
+<style>
+#dashboard h2 {
+  text-align: center !important;
+  font-size: 30px !important;
+  font-weight: 900 !important;
+  letter-spacing: 2px !important;
+  background: linear-gradient(
+    90deg,#b88632,#fff0a8,#d4a943
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  padding: 20px 5px !important;
+  border-bottom: 1px solid #c9a44c55;
+  margin-bottom: 20px !important;
+}
+
+#dashboard h2::after {
+  content: " ✦ PREMIUM DEMO ✦";
+  display: block;
+  font-size: 10px;
+  letter-spacing: 4px;
+  margin-top: 10px;
+  color: #d6ad55;
+  -webkit-text-fill-color: #d6ad55;
+}
+</style>
+<style>
+#dashboard .card,
+#dashboard .box,
+#dashboard .balance-card {
+  background: linear-gradient(
+    145deg,
+    rgba(48,42,29,.95),
+    rgba(15,17,22,.98)
+  ) !important;
+  border: 1px solid #d6ad5577 !important;
+  border-radius: 22px !important;
+  box-shadow:
+    0 10px 30px #0008,
+    inset 0 1px 0 #ffffff15 !important;
+  backdrop-filter: blur(12px);
+  transition: transform .25s ease;
+}
+
+#dashboard .card:active,
+#dashboard .box:active {
+  transform: scale(.98);
+}
+</style>
+<style>
+#navigation button {
+  min-height: 48px !important;
+  padding: 7px 4px !important;
+  border-radius: 12px !important;
+  font-size: 11px !important;
+  opacity: .82;
+  filter: brightness(.78) saturate(.85);
+  box-shadow: 0 3px 10px #0008 !important;
+  transition: all .3s ease !important;
+}
+
+#navigation button::before {
+  font-size: 18px !important;
+}
+
+#navigation button:active {
+  transform: scale(.94);
+  filter: brightness(1.1);
+}
+</style>
+<style>
+#navigation {
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: nowrap !important;
+  gap: 5px !important;
+  padding: 8px 5px !important;
+  overflow-x: auto !important;
+}
+
+#navigation button {
+  flex: 1 1 0 !important;
+  min-width: 0 !important;
+  min-height: 48px !important;
+  padding: 6px 2px !important;
+  border-radius: 11px !important;
+  background: #142b4a !important;
+  color: #dceaff !important;
+  border: 1px solid #29466b !important;
+  font-size: 9px !important;
+  font-weight: bold !important;
+  box-shadow: 0 3px 10px #0007 !important;
+  opacity: 1 !important;
+  filter: none !important;
+}
+
+#navigation button::before {
+  font-size: 15px !important;
+}
+
+#navigation button:active {
+  background: #244b78 !important;
+  transform: scale(.96);
+}
+</style>
+<script>
+(function () {
+  const homeContent = [
+    document.querySelector("#dashboard > h2"),
+    document.querySelector("#dashboard > .notice"),
+    ...document.querySelectorAll("#dashboard > .card")
+  ];
+
+  const homeCards = homeContent.slice(0, 4);
+
+  const originalOpenTab = window.openTab;
+
+  window.openTab = function(tab) {
+    originalOpenTab(tab);
+
+    homeCards.forEach(element => {
+      if (element) {
+        element.classList.toggle("hidden", tab !== "home");
+      }
+    });
+  };
+
+  homeCards.forEach(element => {
+    if (element) element.classList.remove("hidden");
+  });
+})();
+</script>
+<script>
+window.addEventListener("load", function () {
+
+  const homeItems = [
+    document.querySelector("#dashboard > h2"),
+    document.querySelector("#dashboard > .notice"),
+    ...Array.from(document.querySelectorAll("#dashboard > .card"))
+      .filter(card => !card.id.endsWith("Tab"))
+  ];
+
+  const tabs = [
+    "home", "deposit", "plans",
+    "history", "withdraw", "profile"
+  ];
+
+  tabs.forEach(tab => {
+    const button = document.querySelector(
+      '#navigation button[onclick*="' + tab + '"]'
+    );
+
+    if (button) {
+      button.addEventListener("click", function () {
+        homeItems.forEach(item => {
+          if (item) {
+            item.classList.toggle("hidden", tab !== "home");
+          }
+        });
+      });
+    }
+  });
+
+  homeItems.forEach(item => {
+    if (item) item.classList.remove("hidden");
+  });
+
+});
+</script>
+<style>
+#navigation {
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 9999 !important;
+  width: 100% !important;
+  transform: none !important;
+  margin-top: 0 !important;
+  flex-shrink: 0 !important;
+}
+
+#navigation button {
+  transform: none !important;
+  transition: background 0.25s ease, box-shadow 0.25s ease !important;
+}
+
+#navigation button:active {
+  transform: scale(0.97) !important;
+}
+</style>
+<script>
+window.addEventListener("load", function () {
+
+  const names = [
+    "home", "deposit", "plans",
+    "history", "withdraw", "profile"
+  ];
+
+  names.forEach(name => {
+    const button = document.querySelector(
+      '#navigation button[onclick*="' + name + '"]'
+    );
+
+    if (!button) return;
+
+    button.onclick = function () {
+      names.forEach(tab => {
+        const section = document.getElementById(tab + "Tab");
+        if (section) section.classList.add("hidden");
+      });
+
+      const selected = document.getElementById(name + "Tab");
+      if (selected) selected.classList.remove("hidden");
+
+      const homeItems = [
+        document.querySelector("#dashboard > h2"),
+        document.querySelector("#dashboard > .notice"),
+        ...Array.from(document.querySelectorAll("#dashboard > .card"))
+          .filter(card => !card.id.endsWith("Tab"))
+      ];
+
+      homeItems.forEach(item => {
+        if (item) item.classList.toggle("hidden", name !== "home");
+      });
+    };
+  });
+
+});
+</script>
+<style>
+#navigation {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  width: 100% !important;
+  z-index: 99999 !important;
+  margin: 0 !important;
+  transform: none !important;
+  background: #101114 !important;
+}
+
+body {
+  padding-top: 75px !important;
+}
+
+#navigation button,
+#navigation button:active,
+#navigation button:focus {
+  transform: none !important;
+  position: relative !important;
+  top: 0 !important;
+  outline: none !important;
+}
+</style>
+<style>
+#navigation {
+  position: relative !important;
+  top: auto !important;
+  left: auto !important;
+  right: auto !important;
+  transform: none !important;
+  margin: 0 !important;
+}
+
+body {
+  padding-top: 0 !important;
+}
+</style>
+
+<script>
+window.addEventListener("load", function () {
+  const names = [
+    "home", "deposit", "plans",
+    "history", "withdraw", "profile"
+  ];
+
+  names.forEach(name => {
+    const button = document.querySelector(
+      '#navigation button[onclick*="' + name + '"]'
+    );
+
+    if (!button) return;
+
+    button.onclick = function () {
+      names.forEach(tab => {
+        document.getElementById(tab + "Tab")
+          ?.classList.add("hidden");
+      });
+
+      document.getElementById(name + "Tab")
+        ?.classList.remove("hidden");
+
+      document.querySelectorAll("#dashboard > h2, #dashboard > .notice, #dashboard > .card:not([id$='Tab'])")
+        .forEach(item => {
+          item.classList.toggle("hidden", name !== "home");
+        });
+    };
+  });
+});
+</script>
+<style>
+#navigation button {
+  position: relative !important;
+  top: 0 !important;
+  margin-top: 0 !important;
+  vertical-align: middle !important;
+}
+
+#navigation button:active {
+  transform: none !important;
+  top: 0 !important;
+}
+
+#navigation {
+  align-items: center !important;
+  min-height: 60px !important;
+}
+</style>
+<style>
+.deposit-wallet {
+  background: linear-gradient(145deg,#172b45,#101827);
+  border: 1px solid #2875a9;
+  border-radius: 18px;
+  padding: 22px;
+  margin-top: 18px;
+  box-shadow: 0 8px 25px #0006;
+}
+.deposit-wallet h2 {color:#55c7ff}
+.wallet-address {
+  background:#080d16;
+  padding:14px;
+  border-radius:10px;
+  overflow-wrap:anywhere;
+  color:#7ee7bb;
+  margin:15px 0;
+  font-size:13px;
+}
+.copy-wallet {
+  width:100%;
+  padding:14px;
+  border:0;
+  border-radius:12px;
+  color:white;
+  font-weight:bold;
+  background:linear-gradient(90deg,#087cf0,#00b8a9);
+}
+.deposit-note {
+  color:#ffc96b;
+  font-size:12px;
+  line-height:1.6;
+}
+</style>
+
+<script>
+window.addEventListener("load",function(){
+
+  const deposit = document.getElementById("depositTab");
+  if(!deposit || document.getElementById("bep20Wallet")) return;
+
+  const wallet = document.createElement("div");
+  wallet.id = "bep20Wallet";
+  wallet.className = "deposit-wallet";
+
+  wallet.innerHTML = `
+    <h2>USDT Deposit</h2>
+    <p>Network: BNB Smart Chain (BEP20)</p>
+    <p>Personal deposit address — TEST MODE</p>
+
+    <div class="wallet-address">
+      TEST ADDRESS — NO REAL FUNDS
+    </div>
+
+    <button class="copy-wallet" disabled>
+      Test address unavailable
+    </button>
+
+    <p class="deposit-note">
+      This is a test interface. No real wallet address has been
+      generated. Do not send real USDT to this screen.
+    </p>
+  `;
+
+  deposit.appendChild(wallet);
+});
+</script>
+<script>
+window.addEventListener("load", function () {
+  const box = document.querySelector("#bep20Wallet .wallet-address");
+  const button = document.querySelector("#bep20Wallet .copy-wallet");
+
+  if (!box || !button) return;
+
+  const sampleAddress =
+    "0x742d35Cc6634C0532925a3b844Bc454e4438f44e";
+
+  box.innerHTML = `
+    <small style="color:#ffc96b">SAMPLE ADDRESS — NOT FOR DEPOSITS</small>
+    <br><br>${sampleAddress}
+  `;
+
+  button.disabled = false;
+  button.textContent = "📋 Copy Sample Address";
+
+  button.onclick = async function () {
+    try {
+      await navigator.clipboard.writeText(sampleAddress);
+      button.textContent = "✓ Copied";
+    } catch (error) {
+      button.textContent = "Copy unavailable";
+    }
+  };
+});
+</script>
+
+<style>
+.plan-card {
+  background: linear-gradient(145deg,#17243b,#101722);
+  border: 1px solid #315477;
+  border-radius: 18px;
+  padding: 20px;
+  margin: 16px 0;
+  box-shadow: 0 8px 22px #0005;
+}
+.plan-card h3 { color:#55c7ff; }
+.plan-tag {
+  display:inline-block;
+  background:#173d36;
+  color:#72e6b5;
+  padding:6px 12px;
+  border-radius:20px;
+  font-size:12px;
+}
+.plan-card button {
+  width:100%;
+  padding:13px;
+  border:0;
+  border-radius:11px;
+  color:white;
+  font-weight:bold;
+  background:linear-gradient(90deg,#087cf0,#00b8a9);
+}
+</style>
+
+<script>
+window.addEventListener("load", function () {
+  const section = document.getElementById("plansTab");
+  if (!section || document.getElementById("demoPlans")) return;
+
+  const plans = document.createElement("div");
+  plans.id = "demoPlans";
+
+  plans.innerHTML = `
+    <h2> S ROOM Plans</h2>
+    <p>Explore our demo account options.</p>
+
+    <div class="plan-card">
+      <span class="plan-tag">STARTER</span>
+      <h3>Starter Plan</h3>
+      <h2>$50</h2>
+      <p>Demo allocation: $50</p>
+      <button onclick="alert('Demo plan selected. No money was charged.')">
+        Select Plan
+      </button>
+    </div>
+
+    <div class="plan-card">
+      <span class="plan-tag">STANDARD</span>
+      <h3>Standard Plan</h3>
+      <h2>$100</h2>
+      <p>Demo allocation: $100</p>
+      <button onclick="alert('Demo plan selected. No money was charged.')">
+        Select Plan
+      </button>
+    </div>
+
+    <div class="plan-card">
+      <span class="plan-tag">PREMIUM</span>
+      <h3>Premium Plan</h3>
+      <h2>$500</h2>
+      <p>Demo allocation: $500</p>
+      <button onclick="alert('Demo plan selected. No money was charged.')">
+        Select Plan
+      </button>
+    </div>
+
+    <p style="color:#ffc96b;font-size:12px">
+      DEMO ONLY — These are sample amounts, not investment offers.
+    </p>
+  `;
+
+  section.appendChild(plans);
+});
+</script>
+<script>
+window.addEventListener("load", function () {
+  const cards = document.querySelectorAll("#demoPlans .plan-card");
+
+  cards.forEach(card => {
+    const button = card.querySelector("button");
+
+    button.onclick = function () {
+      const name = card.querySelector("h3").textContent;
+      const amount = card.querySelector("h2").textContent;
+
+      const old = document.getElementById("planConfirm");
+      if (old) old.remove();
+
+      const box = document.createElement("div");
+      box.id = "planConfirm";
+      box.className = "plan-card";
+
+      box.innerHTML = `
+        <h2>Confirm Selection</h2>
+        <p>Selected plan: <strong>${name}</strong></p>
+        <h2>${amount}</h2>
+        <p style="color:#ffc96b">DEMO MODE — No payment required.</p>
+        <button id="confirmDemoPlan">Confirm Demo Plan</button>
+      `;
+
+      document.getElementById("plansTab").appendChild(box);
+
+      document.getElementById("confirmDemoPlan").onclick = function () {
+        alert(name + " selected successfully in demo mode!");
+        box.remove();
+      };
+
+      box.scrollIntoView({behavior:"smooth"});
+    };
+  });
+});
+</script>
